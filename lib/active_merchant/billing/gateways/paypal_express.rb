@@ -25,6 +25,12 @@ module ActiveMerchant #:nodoc:
         commit 'SetExpressCheckout', build_setup_request('Sale', money, options)
       end
 
+      def setup_order(money, options = {})
+        requires!(options, :return_url, :cancel_return_url)
+
+        commit 'SetExpressCheckout', build_setup_request('Order', money, options)
+      end
+
       def details_for(token)
         commit 'GetExpressCheckoutDetails', build_get_details_request(token)
       end
@@ -41,6 +47,14 @@ module ActiveMerchant #:nodoc:
         commit 'DoExpressCheckoutPayment', build_sale_or_authorization_request('Sale', money, options)
       end
 
+      def order(money, options = {})
+        commit 'DoExpressCheckoutPayment', build_sale_or_authorization_request('Order', money, options)
+      end
+
+      def authorize_order(money, transaction_id)
+        commit 'DoAuthorization', build_order_authorization_request(money, transaction_id)
+      end
+
       def reference_transaction(money, options = {})
         requires!(options, :reference_id, :payment_type, :invoice_id, :description, :ip)
 
@@ -54,6 +68,20 @@ module ActiveMerchant #:nodoc:
           xml.tag! 'GetExpressCheckoutDetailsRequest', 'xmlns:n2' => EBAY_NAMESPACE do
             xml.tag! 'n2:Version', API_VERSION
             xml.tag! 'Token', token
+          end
+        end
+
+        xml.target!
+      end
+
+      def build_order_authorization_request(money, transaction_id)
+        xml = Builder::XmlMarkup.new :indent => 2
+        xml.tag! 'DoAuthorizationReq', 'xmlns' => PAYPAL_NAMESPACE do
+          xml.tag! 'DoAuthorizationRequest', 'xmlns:n2' => EBAY_NAMESPACE do
+            xml.tag! 'n2:Version', API_VERSION
+            xml.tag! 'TransactionID', transaction_id
+            xml.tag! 'Amount', money
+            xml.tag! 'TransactionEntity', 'Order'
           end
         end
 
