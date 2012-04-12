@@ -176,6 +176,10 @@ module ActiveMerchant #:nodoc:
                   xml.tag! 'n2:TaxTotal', localized_amount(options[:tax], currency_code), 'currencyID' => currency_code
                 end
 
+                if options.has_key?(:shipping_discount)
+                  xml.tag! 'n2:ShippingDiscount', localized_amount(options[:shipping_discount], currency_code), 'currencyID' => currency_code
+                end
+
                 xml.tag! 'n2:OrderDescription', options[:description]
                 xml.tag! 'n2:InvoiceID', options[:order_id]
 
